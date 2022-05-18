@@ -23,22 +23,22 @@ public class NowPlayingGUIController implements ActionListener
 {
     // we set and use these across different methods
     // so we add them as instance variables
-    private JTextArea movieInfo;
-    private JTextField movieEntryField;
-    private ArrayList<Movie> nowPlaying;
-    private MovieNetworkingClient client;
+    private JTextArea weatherInfo;
+    private JTextField weatherEntryField;
+    private ArrayList<Weather> nowShowing;
+    private WeatherNetworking client;
 
     // constructor, which calls helper methods
     // to setup the GUI then load the now playing list
     public NowPlayingGUIController()
     {
-        movieInfo = new JTextArea(20, 35);
-        nowPlaying = new ArrayList<>();
-        client = new MovieNetworkingClient();  // our "networking client"
+        weatherInfo = new JTextArea(20, 35);
+        nowShowing = new ArrayList<>();
+        client = new WeatherNetworking();  // our "networking client"
 
         // setup GUI and load Now Playing list
         setupGui();
-        loadNowPlaying();
+        loadForecast();
     }
 
     // private helper method, called by constructor
@@ -46,16 +46,16 @@ public class NowPlayingGUIController implements ActionListener
     private void setupGui()
     {
         //Creating a Frame
-        JFrame frame = new JFrame("My Now Playing Networking App!");
+        JFrame frame = new JFrame("My Weather Forecast App!");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // ends program when you hit the X
 
         // Creating an image from a jpg file stored in the src directory
-        ImageIcon image = new ImageIcon("src/tmdblogo.jpg");
+        ImageIcon image = new ImageIcon("src/Logo.jpg");
         Image imageData = image.getImage(); // transform it
         Image scaledImage = imageData.getScaledInstance(100, 100, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
         image = new ImageIcon(scaledImage);  // transform it back
         JLabel pictureLabel = new JLabel(image);
-        JLabel welcomeLabel = new JLabel("   Movies Now Playing!");
+        JLabel welcomeLabel = new JLabel("   Forecast For This Month!");
         welcomeLabel.setFont(new Font("Helvetica", Font.BOLD, 20));
         welcomeLabel.setForeground(Color.blue);
 
@@ -64,27 +64,27 @@ public class NowPlayingGUIController implements ActionListener
         logoWelcomePanel.add(welcomeLabel);
 
         // middle panel with movie list
-        JPanel movieListPanel = new JPanel();
-        movieInfo.setText("movies loading...");
-        movieInfo.setFont(new Font("Helvetica", Font.PLAIN, 16));
-        movieInfo.setWrapStyleWord(true);
-        movieInfo.setLineWrap(true);
-        movieListPanel.add(movieInfo);
+        JPanel weatherListPanel = new JPanel();
+        weatherInfo.setText("forecast loading...");
+        weatherInfo.setFont(new Font("Helvetica", Font.PLAIN, 16));
+        weatherInfo.setWrapStyleWord(true);
+        weatherInfo.setLineWrap(true);
+        weatherListPanel.add(weatherInfo);
 
         //bottom panel with text field and buttons
         JPanel entryPanel = new JPanel(); // the panel is not visible in output
-        JLabel movieLabel = new JLabel("Which Movie? (Enter 1-20): ");
-        movieEntryField = new JTextField(10); // accepts up to 10 characters
+        JLabel weatherLabel = new JLabel("Which Date? (Enter 1-14): ");
+        weatherEntryField = new JTextField(10); // accepts up to 10 characters
         JButton sendButton = new JButton("Send");
         JButton resetButton = new JButton("Reset");
-        entryPanel.add(movieLabel);
-        entryPanel.add(movieEntryField);
+        entryPanel.add(weatherLabel);
+        entryPanel.add(weatherEntryField);
         entryPanel.add(sendButton);
         entryPanel.add(resetButton);
 
         //Adding Components to the frame
         frame.add(logoWelcomePanel, BorderLayout.NORTH);
-        frame.add(movieListPanel, BorderLayout.CENTER);
+        frame.add(weatherListPanel, BorderLayout.CENTER);
         frame.add(entryPanel, BorderLayout.SOUTH);
 
         // PART 2 -- SET UP EVENT HANDLING
@@ -104,21 +104,21 @@ public class NowPlayingGUIController implements ActionListener
     // this method gets called by the constructor as part of
     // the initial set up of the GUI, and also when the user
     // clicks the "Reset" button
-    private void loadNowPlaying()
+    private void loadForecast()
     {
         // use client to make network call to Now Playing, which returns an arraylist
         // which gets assigned to the nowPlaying instance variable
-        nowPlaying = client.getNowPlaying();
+        nowShowing = client.getNowShowing();
 
         // build the string to display in the movieInfo label
         String labelStr = "";
         int count = 1;
-        for (Movie movie : nowPlaying)
+        for (Weather weather : nowShowing)
         {
-            labelStr += count + ". " + movie.getTitle() + "\n";
+            labelStr += count + ". " + weather.getDate() + "\n";
             count++;
         }
-        movieInfo.setText(labelStr);
+        weatherInfo.setText(labelStr);
     }
 
     // private helper method to load the details for
@@ -126,33 +126,18 @@ public class NowPlayingGUIController implements ActionListener
     // obtaining a DetailedMovie, then
     // creating a string that gets displayed in a GUI label;
     // this method gets called when the user clicks the "Send" button
-    private void loadMovieInfo(Movie movie)
+    private void loadWeatherInfo(Weather weather)
     {
-        // make network call to Movie Details, which returns a DetailedMovie object
-        DetailedMovie detail = client.getMovieDetails(movie.getID());
-
         // build the string with movie details
-        String info = "Title: " + detail.getTitle() +
-                "\n\nOverview: " + detail.getOverview() +
-                "\n\nTagline: " + detail.getTagline() +
-                "\n\nPopularity: " + detail.getPopularity() +
-                "\n\nReleased on: " + detail.getReleaseDate();
-
-        movieInfo.setText(info);
-
-        // download and display poster image in a new window
-        try {
-            URL imageURL = new URL(detail.getPosterPath());
-            BufferedImage image = ImageIO.read(imageURL);
-            JFrame frame = new JFrame("Poster for " + movie.getTitle());
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            JLabel movieImage = new JLabel(new ImageIcon(image));
-            frame.add(movieImage);
-            frame.pack();
-            frame.setVisible(true);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
+        String info = "Date: " + weather.getDate() +
+                "\n\nMaxTemp: " + weather.getMaxTemp() +
+                "\n\nMinTemp: " + weather.getMinTemp() +
+                "\n\nAvgTemp: " + weather.getAvgTemp() +
+                "\n\nPrecipitation: " + weather.getPrecip() +
+                "\n\nAvgHumidity: " + weather.getAvgHum() +
+                "\n\nSunrise: " + weather.getSunrise() +
+                "\n\nSunrise: " + weather.getSunset();
+        weatherInfo.setText(info);
     }
 
     // implement ActionListener interface method
@@ -168,24 +153,24 @@ public class NowPlayingGUIController implements ActionListener
         {
             // obtain the numerical value that the user typed into the text field
             // (getTest() returns a string) and convert it to an int
-            String selectedMovieNum = movieEntryField.getText();
+            String selectedMovieNum = weatherEntryField.getText();
             int movieNumInt = Integer.parseInt(selectedMovieNum);
 
             // obtain the movie in the nowPlaying arraylist that the number they
             // typed in corresponds to
             int movieIdx = movieNumInt - 1;
-            Movie selectedMovie = nowPlaying.get(movieIdx);
+            Weather selectedWeather = nowShowing.get(movieIdx);
 
             // call private method to load movie info for that Movie object
-            loadMovieInfo(selectedMovie);
+            loadWeatherInfo(selectedWeather);
         }
 
         // if user clicked "Reset" button, set the text field back to empty string
         // and load the Now Playing list again
         else if (text.equals("Reset"))
         {
-            movieEntryField.setText("");
-            loadNowPlaying();
+            weatherEntryField.setText("");
+            loadForecast();
         }
     }
 }
